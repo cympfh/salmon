@@ -5,17 +5,18 @@ var child   = require("child_process")
   , print   = console.log
 
   , args = process.argv
-  , cd =
-      (function(l){
-        return l.slice(0, l.lastIndexOf("/"))
-      })(process.argv[1])
+  , cd = (function(l){ return l.slice(0, l.lastIndexOf("/")) })(process.argv[1])
 
   , OS = ('TERM_PROGRAM' in process.env) ? 'MAC' : 'LINUX'
 
   , open_command = (OS === 'MAC') ?  'open' : 'firefox'
+  ;
 
+var beep = require("./beep")(OS);
+
+var
 // const
-  , zeroSpace = String.fromCharCode(8203)
+    zeroSpace = String.fromCharCode(8203)
   , esc = String.fromCharCode(27)
   , recently_tw_size = 6
   , delete_lag = 10 * 60000
@@ -67,15 +68,6 @@ function make_twitter(name) {
 }
 
 // --------------  util
-
-var beep = (function() {
-  var command =
-    OS==='LINUX' ? "play /usr/share/sounds/linuxmint-gdm.wav"
-                 : "afplay -v 5 /System/Library/Sounds/Pop.aiff";
-  return function() {
-    child.exec(command, function() { });
-  }
-})();
 
 function strTime() {
   var t = new Date();
@@ -309,11 +301,13 @@ stdin.on("data", function(chunk) {
 
     function proc_stream(chunk) {
         switch (chunk) {
+            /*
             case esc:
                 mode = "repl";
                 stdin.setRawMode(false);
                 prompt();
                 break;
+            */
             case 'i':
                 mode = "insert";
                 stdin.setRawMode(false);
@@ -456,6 +450,13 @@ stdin.on("data", function(chunk) {
         else if (chunk == 's') {
             moveToStream();
             return;
+        }
+        else if (chunk == "sh") {
+          // goto repl
+          mode = "repl";
+          stdin.setRawMode(false);
+          prompt();
+          return;
         }
         else if (chunk.indexOf("ls") == 0) {
             var ret = [];
