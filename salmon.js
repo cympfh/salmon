@@ -213,8 +213,7 @@ function setup(u) {
               esc+"[33mvia "+source + esc+"[m "+
               time +
               "\n" +
-              text
-              ;
+              text;
 
             putStr(colored);
 
@@ -525,12 +524,22 @@ stdin.on("data", function(chunk) {
         }
         else if (chunk.slice(0,3) === "RT ") {
           var id = chunk.split(" ")[1];
-          var dict = { "oppai" : "162076119531667457" };
-          if (id in dict) id = dict[id];
           tw[current_user].post(
               "https://api.twitter.com/1.1/statuses/retweet/"+id+".json"
             , {}
             , function(){});
+        }
+        else if (chunk == 'oppai') {
+          var ls = [
+            "350446995057557506"
+          , "414080768017571840"
+          , "162076119531667457" ];
+
+          for (var i=0; i<ls.length; ++i) {
+            tw[current_user].post(
+                "https://api.twitter.com/1.1/statuses/retweet/"+ls[i]+".json"
+              , {}
+              , function(){}); }
         }
         else if (chunk.slice(0,4) == 'fav ') {
           var id = lastID[chunk.split(' ')[1]];

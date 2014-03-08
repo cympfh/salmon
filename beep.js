@@ -1,3 +1,5 @@
+var exec = require('child_process').exec;
+
 module.exports = function(OS) {
 
   var command =
@@ -5,7 +7,7 @@ module.exports = function(OS) {
                  : "afplay -v 5 /System/Library/Sounds/Pop.aiff";
 
   return function () {
-    child.exec(command, function(){});
+    exec(command, function(){});
   };
 
 };
