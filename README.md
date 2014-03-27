@@ -98,7 +98,9 @@ or
 
 here, .salmon_completions is a list file of words, e.g. Twitter ID list of you follows.
 
-To get Twitter ID list, I wrote script/getFollows.js (1.1/get/friend/list). But this API's limit is too narrow.
+To get Twitter ID list, I wrote script/getFollows.js (1.1/get/friend/list).
+But this API's limit is too narrow.
+At one time, this get 200 ID.
 
     node ./script/getFollows.js > ~/.salmon_completions
 
