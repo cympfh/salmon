@@ -1,4 +1,6 @@
 Vim interface, Twitter client
+
+Use
 ===
 
 modes
@@ -79,4 +81,23 @@ repl
 ---
 
 this is JavaScript repl to debug or hack.
+
+Start
+===
+
+    node salmon.js
+
+i recommend
+
+    rlwrap -f ~/.salmon_completions salmon.js
+
+or
+
+    alias salmon='rlwrap -f ~/.salmon_completions salmon.js'
+
+here, .salmon_completions is a list file of words, e.g. Twitter ID list of you follows.
+
+To get Twitter ID list, I wrote script/getFollows.js (1.1/get/friend/list). But this API's limit is too narrow.
+
+    node ./script/getFollows.js > ~/.salmon_completions
 

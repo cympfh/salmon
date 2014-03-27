@@ -2,12 +2,9 @@ var exec = require('child_process').exec;
 
 module.exports = function(OS) {
 
-  var command =
-    OS==='LINUX' ? "play /usr/share/sounds/linuxmint-gdm.wav"
-                 : "afplay -v 5 /System/Library/Sounds/Pop.aiff";
+  var file = process.env.HOME + '/Dropbox/node/salmon/catch.oga'
+    , command = (OS==='LINUX' ? 'play' : 'afplay -v') + ' ' + file
 
-  return function () {
-    exec(command, function(){});
-  };
+  return function () { exec(command, function(){}); };
 
 };

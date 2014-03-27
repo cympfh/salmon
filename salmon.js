@@ -1,7 +1,8 @@
 var child   = require("child_process")
   , fs      = require("fs")
   , twitter = require("ntwitter")
-  , users   = require("../token.json").users
+  , setting = require("../setting.json")
+  , users   = setting.users
   , print   = console.log
 
   , args = process.argv
@@ -137,6 +138,8 @@ function setup(u) {
                 faved_name = data.target_object.user.screen_name;
                 faved_text = data.target_object.text;
                 faver_name = data.source.screen_name;
+
+                if (faver_name === 'ampeloss') return;
 
                 colored = esc + "[34m@" + faver_name + esc + "[m " + 
                           esc + "[31m" + event + "s" + esc + "[m " +
