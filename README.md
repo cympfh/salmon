@@ -42,6 +42,7 @@ type command following [:]
 | :r      | look replies gotten while stream |
 | :f      | look fav, followed, unfollowed gotten while stream |
 | :reply  | look replies (this is not stream API) |
+| :!      | do shell command. (e.g. :!firefox http://hoge.com) |
 
 insert
 ---
