@@ -7,9 +7,7 @@ var child   = require("child_process")
 
   , args = process.argv
   , cd = (function(l){ return l.slice(0, l.lastIndexOf("/")) })(process.argv[1])
-
   , OS = ('TERM_PROGRAM' in process.env) ? 'MAC' : 'LINUX'
-
   , open_command = (OS === 'MAC') ?  'open' : 'firefox'
   ;
 
@@ -303,13 +301,6 @@ stdin.on("data", function(chunk) {
 
     function proc_stream(chunk) {
         switch (chunk) {
-            /*
-            case esc:
-                mode = "repl";
-                stdin.setRawMode(false);
-                prompt();
-                break;
-            */
             case 'i':
                 mode = "insert";
                 stdin.setRawMode(false);
@@ -649,8 +640,8 @@ function PosttoTwitter (msg) {
         recentlyMyTw = recentlyMyTw.slice(-30);
       return msg;
     }
-
 }
+
 function PostBy(text, name) {
   var tmp = current_user;
   current_user = name;
