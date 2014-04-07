@@ -546,6 +546,17 @@ stdin.on("data", function(chunk) {
           var scname = chunk.split(" ")[1];
           tw[current_user].post(url, {"screen_name" : scname }, function(){});
         }
+        else if (chunk.slice(0, 9) === 'unfollow ') {
+          var url = "https://api.twitter.com/1.1/friendships/destroy.json";
+          var scname = chunk.split(" ")[1];
+          tw[current_user].post(url, {"screen_name" : scname }, function(){});
+        }
+        else if (chunk.slice(0, 5) === 'spam ') {
+          var url = "https://api.twitter.com/1.1/users/report_spam.json";
+          var scname = chunk.split(" ")[1];
+          tw[current_user].post(url, {"screen_name" : scname }, function(){});
+        }
+
         else if (chunk.slice(0, 7) == 'browse ') {
           var sname = chunk.split(' ')[1];
           var url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
@@ -556,11 +567,14 @@ stdin.on("data", function(chunk) {
                        console.dir("err:",er);
                        return
                      }
-                     putStr('/* user timeline of ' + id + ' */');
-                     for (var i=data.length-1; i>=0; --i)
+                     putStr('/* user timeline of ' + sname + ' */');
+                     for (var i=data.length-1; i>=0; --i) {
                        show(data[i]);
+                     }
+                     putStr('');
                    });
         }
+
         else if (chunk == 'browse') {
 
           var url = "https://api.twitter.com/1.1/statuses/home_timeline.json";
