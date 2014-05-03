@@ -8,7 +8,6 @@ var child   = require("child_process")
   , args = process.argv
   , cd = (function(l){ return l.slice(0, l.lastIndexOf("/")) })(process.argv[1])
   , OS = ('TERM_PROGRAM' in process.env) ? 'MAC' : 'LINUX'
-  , open_command = (OS === 'MAC') ?  'open' : 'firefox'
   ;
 
 var beep = require("./beep")(OS);
@@ -84,11 +83,6 @@ function source_trim(str) {
   return str;
 }
 
-String.prototype.count = function(sub) {
-  for (var c=i=0;i>=0;i=this.indexOf(sub,i+1),++c);
-  return c;
-};
-
 function show(data) {
     var name = data.user.screen_name
       , nick = data.user.name
@@ -136,8 +130,6 @@ function setup(u) {
                 faved_name = data.target_object.user.screen_name;
                 faved_text = data.target_object.text;
                 faver_name = data.source.screen_name;
-
-                if (faver_name === 'ampeloss') return;
 
                 colored = esc + "[34m@" + faver_name + esc + "[m " + 
                           esc + "[31m" + event + "s" + esc + "[m " +
@@ -204,8 +196,6 @@ function setup(u) {
             var followingList = "";
             for (var t in followedBy[name]) followingList += t[0];
 
-            if (text.count('\n') >= 12) return;
-
             colored =
               esc+"[35m@" + name + esc+"[m " +
               esc+"[36m" + nick + esc+"[m "+
@@ -213,17 +203,15 @@ function setup(u) {
               "("+followingList+") " +
               esc+"[33mvia "+source + esc+"[m "+
               time +
-              "\n" +
+              "\n> " +
               text;
 
             putStr(colored);
 
             var urls = data.entities.urls;
-            for (var i in urls) putStr('!'+open_command+' '+urls[i].expanded_url);
+            for (var i in urls) putStr(urls[i].expanded_url);
 
-            function isMe(name) {
-                return (name in users);
-            }
+            function isMe(name) { return (name in users); }
 
             if (isMe(name) && text.slice(0,2) === 'NB')
                 setTimeout(deleteTweet, delete_lag, status_id);
@@ -258,7 +246,6 @@ function setup(u) {
 
         stream.on('destroy', function (response) {
             print("### stream destroied")
-            // setTimeout(setup, 2000, u);
         });
 
         stream.on("error", function (e) {
@@ -691,7 +678,7 @@ function getReply () {
       console.log(
         esc+"[34m@"+d.user.screen_name+" / "+d.user.name + esc+"[m" +
         " ; " + esc+"[33mvia " + source_trim(d.source) + esc+"[m" +
-        " ; " + d.created_at + "\n" + d.text);
+        " ; " + d.created_at + "\n> " + d.text);
     }
   });
 }
@@ -710,7 +697,7 @@ function upload(filename) {
 }
 
 // stdout
-function putStr (text) {
+function putStr(text) {
     if (mode == "stream")
         console.log(text);
     else
