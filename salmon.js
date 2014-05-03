@@ -203,13 +203,13 @@ function setup(u) {
               "("+followingList+") " +
               esc+"[33mvia "+source + esc+"[m "+
               time +
-              "\n> " +
+              "\n" +
               text;
 
             putStr(colored);
 
             var urls = data.entities.urls;
-            for (var i in urls) putStr(urls[i].expanded_url);
+            for (var i in urls) putStr('> ' + urls[i].expanded_url);
 
             function isMe(name) { return (name in users); }
 
@@ -678,7 +678,7 @@ function getReply () {
       console.log(
         esc+"[34m@"+d.user.screen_name+" / "+d.user.name + esc+"[m" +
         " ; " + esc+"[33mvia " + source_trim(d.source) + esc+"[m" +
-        " ; " + d.created_at + "\n> " + d.text);
+        " ; " + d.created_at + "\n" + d.text);
     }
   });
 }
