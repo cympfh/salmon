@@ -1,3 +1,5 @@
+#!/usr/bin/rlwrap node
+
 var child   = require("child_process")
   , fs      = require("fs")
   , twitter = require("ntwitter")
@@ -6,17 +8,12 @@ var child   = require("child_process")
   , print   = console.log
 
   , args = process.argv
-  , cd = (function(l){ return l.slice(0, l.lastIndexOf("/")) })(process.argv[1])
   , OS = ('TERM_PROGRAM' in process.env) ? 'MAC' : 'LINUX'
   ;
 
 var beep = require("./beep")(OS);
-
-var
-// const
-    zeroSpace = String.fromCharCode(8203)
-  , esc = String.fromCharCode(27)
-  , recently_tw_size = 6
+ 
+var recently_tw_size = 6
   , delete_lag = 10 * 60000
 
 // stack
@@ -25,7 +22,6 @@ var
   , recently_tw = []
   , recentlyMyTw = []
   , followedBy = []
-  , lastID = []
 
   , tw_buf = ""
   , screen_buf = ""
@@ -67,15 +63,11 @@ function make_twitter(name) {
 
 // --------------  util
 
-function strTime() {
-  var t = new Date();
-  return t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds()
-}
+Font = require('./font');
 
-function trim (str) {
-  for (var i=str.length-1; i>=0; --i)
-    if (str[i] != ' ' && str[i] != '\n') break;
-  return str.slice(0, i+1);
+function timezone(date) {
+  date = new Date('' + date);
+  return date.toString();
 }
 
 function source_trim(str) {
@@ -91,22 +83,35 @@ function show(data) {
             .replace(/&lt;/g, "<")
             .replace(/&gt;/g, ">")
             .replace(/&amp;/g, "&")
+            .replace(/&quot;/g, "\"")
       , status_id = data.id_str
       , source = source_trim(data.source)
       , time = data.created_at
+      , colored
+      , followList = followedBy[name] ? ('(' + followedBy[name] + ')') : ''
+      ;
 
     if (source === 'Ask.fm') return;
 
     colored =
-      esc+"[35m@" + name + esc+"[m " +
-      esc+"[36m" + nick + esc+"[m "+
-      esc+"[33mvia "+source + esc+"[m "+
-      time +
-      "\n" +
+      [Font.red('@' + name), Font.cyan(nick), Font.gray(status_id),
+       Font.red(followList), Font.brown('via ' + source)].join(' ') + ' ++ ' +
+      Font.underline(timezone(time)) + '\n' +
       text
       ;
 
     putStr(colored);
+    return colored;
+}
+
+// data is measured by u
+function addFollowList (data, u) {
+  if (!data || !data.user || !data.user.screen_name || !u) return;
+  var name = data.user.screen_name;
+  if (!(name in followedBy)) followedBy[name] = '';
+  if (followedBy[name].indexOf(u[0]) === -1) {
+    followedBy[name] += u[0];
+  }
 }
 
 // ---------------------------
@@ -118,13 +123,14 @@ function setup(u) {
        (!('display' in users[u])) ? "true"
                        : users[u].display;
 
-    if (display == 'false') return;
+    if (display === 'false') return;
 
     tw[u].stream('user',  function(stream) {
         stream.on('data', function(data) {
             if (!data) return
 
             var event = data.event;
+            var colored;
 
             if (event == "favorite" || event == "unfavorite") {
                 faved_name = data.target_object.user.screen_name;
@@ -154,7 +160,7 @@ function setup(u) {
                 favs.push(colored);
                 beep();
 
-                return
+                return;
             }
             if (data.event) {
                 console.log("###", data.event);
@@ -162,68 +168,46 @@ function setup(u) {
             }
 
             if (!data || !data.user || !data.text) {
-                return
+                return;
             }
-
-            var user = data.user;
-            var name = user.screen_name,
-                nick = user.name;
-            var text =
-                    data.text
-                    .replace(/&lt;/g, "<")
-                    .replace(/&gt;/g, ">")
-                    .replace(/&amp;/g, "&");
-            var status_id = data.id_str
-            var source = source_trim(data.source)
-            var time = strTime();
 
             if (display == 'talse' && text[0] != '@') {
               return; // mute
             }
 
-            lastID[name] = status_id;
+            // add follow list
+            addFollowList(data, u);
 
-            if (!followedBy[name]) followedBy[name] = [];
-            if (!followedBy[name][u]) followedBy[name][u] = true;
-
+            // nub time line
             var t = name + text;
-            if (recently_tw.indexOf(t) != -1) return; // do nub
+            if (recently_tw.indexOf(t) != -1) return;
             recently_tw.push(t);
-            if (recently_tw.length > recently_tw_size)
+            if (recently_tw.length > recently_tw_size) {
                 recently_tw = recently_tw.slice(-recently_tw_size);
+            }
 
             // just display
-            var followingList = "";
-            for (var t in followedBy[name]) followingList += t[0];
-
-            colored =
-              esc+"[35m@" + name + esc+"[m " +
-              esc+"[36m" + nick + esc+"[m "+
-              esc+"[37m" + status_id  + esc+"[m "+
-              "("+followingList+") " +
-              esc+"[33mvia "+source + esc+"[m "+
-              time +
-              "\n" +
-              text;
-
-            putStr(colored);
+            colored = show(data);
 
             var urls = data.entities.urls;
             for (var i in urls) putStr('> ' + urls[i].expanded_url);
 
             function isMe(name) { return (name in users); }
 
-            if (isMe(name) && text.slice(0,2) === 'NB')
+            if (isMe(name) && text[0] === '/') {
                 setTimeout(deleteTweet, delete_lag, status_id);
+            }
 
             if (isMe(name)) {
                 last_status_id.push(status_id);
             }
 
             function isReply(text) {
-                return (/ide1o|cympf|枚方|まいかた|ひらか|ひらら|ampeloss|いらいざ|イライザ|いういざ/.test(text));
+              for (var u in users) {
+                if (text.indexOf(u) !== -1) return true;
+              }
+              return (/枚方|まいかた|ひららら|いらいざ|イライザ/.test(text));
             }
-
             if (isReply(text)) {
                 replies.push(colored);
                 beep();
@@ -316,7 +300,6 @@ stdin.on("data", function(chunk) {
     }
 
     function proc_insert(chunk) {
-        chunk = trim(chunk);
 
         if (chunk[0] == '.') {
             if (chunk.length > 1) {
@@ -330,9 +313,9 @@ stdin.on("data", function(chunk) {
                 }
                 if (!succ)
                     PosttoTwitter(tw_buf);
-            }
-            else
+            } else {
                 PosttoTwitter(tw_buf);
+            }
             moveToStream();
         } else if (chunk == "quit" || chunk == ",") {
             moveToStream();
@@ -402,17 +385,11 @@ stdin.on("data", function(chunk) {
             console.log("fail to search:", last_search_word);
           }
           else {
-            console.log("-- result of search ---------------------------")
+            console.log();
+            console.log("-- result of search ---------------------------");
             data = data.statuses;
-            for (var i=data.length-1; i>=0; --i) {
-              var d = data[i];
-              if (!d) continue;
-              var name = d.user.screen_name
-                , text = d.text;
-              var colored = esc+"[34m@" + name + esc+"[m : "+ text;
-              console.log(colored);
-            }
-            console.log("");
+            data.reverse().forEach(show);
+            console.log();
           }
           moveToStream();
 
@@ -465,10 +442,10 @@ stdin.on("data", function(chunk) {
                 }
             }
         }
-        if (chunk === "reply") {
+        else if (chunk === "reply") {
           getReply();
         }
-        if (chunk == "r") {
+        else if (chunk === "r") {
             console.log("### replies to you")
             if (replies.length == 0)
                 console.log ("nothing")
@@ -523,7 +500,7 @@ stdin.on("data", function(chunk) {
               , function(){}); }
         }
         else if (chunk.slice(0,4) == 'fav ') {
-          var id = lastID[chunk.split(' ')[1]];
+          var id = chunk.split(' ')[1];
           console.log(current_user, "favs", id);
           var url = "https://api.twitter.com/1.1/favorites/create.json";
           tw[current_user].post(url, { "id" : id }, function(er, data) {});
@@ -547,34 +524,30 @@ stdin.on("data", function(chunk) {
         else if (chunk.slice(0, 7) == 'browse ') {
           var sname = chunk.split(' ')[1];
           var url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
-          tw[current_user].get(url
-                 , {screen_name : sname, count : 20}
-                 , function(er, data) {
-                     if (er || !data) {
-                       console.dir("err:",er);
-                       return
-                     }
-                     putStr('/* user timeline of ' + sname + ' */');
-                     for (var i=data.length-1; i>=0; --i) {
-                       show(data[i]);
-                     }
-                     putStr('');
-                   });
+          tw[current_user].get(
+              url,
+              {screen_name : sname, count : 20},
+              function(er, data) {
+                if (er || !data) {
+                  console.dir("err:",er);
+                  return;
+                }
+                putStr('/* user timeline of ' + sname + ' */');
+                data.reverse().forEach(show);
+                putStr('');
+              });
         }
 
         else if (chunk == 'browse') {
 
           var url = "https://api.twitter.com/1.1/statuses/home_timeline.json";
-          tw[current_user].get(url
-                 , { "id" : id }
-                 , function(er, data) {
-                     putStr('/* home timeline of', current_user, ' */');
-                     for (var i=data.length-1; i>=0; --i)
-                       show(data[i]);
-                   });
-        } else if (chunk.slice(0, 5) === "image") {
-          var fname = chunk.split(' ')[1];
-          upload(fname);
+          tw[current_user].get(
+              url,
+              { "id" : id },
+              function(er, data) {
+                putStr('/* home timeline of ' + current_user + ' */');
+                data.reverse().forEach(show);
+              });
         }
 
         if (mode == "command") {
@@ -585,7 +558,6 @@ stdin.on("data", function(chunk) {
     }
 });
 
-var post = PosttoTwitter;
 function PosttoTwitter (msg) {
     if (msg == undefined || msg == "" || msg == "\n") return;
 
@@ -633,7 +605,7 @@ function PosttoTwitter (msg) {
           var idx = Math.floor(Math.random()*140);
           msg = msg.slice(0, idx) + msg.slice(idx + 1, 140);
         } else {
-          msg = (msg + zeroSpace).slice(0, 140);
+          msg = (msg + '　').slice(0, 140);
         }
       }
       recentlyMyTw.push(msg);
@@ -671,28 +643,10 @@ function getReply () {
   for (u in users)
   tw[u].get("https://api.twitter.com/1.1/statuses/mentions_timeline.json",
     {count : 6},
-  function(err, dat){
+  function(err, data){
     if (err) return print(err);
-    for (var i=dat.length-1; i>=0; --i) {
-      var d = dat[i];
-      console.log(
-        esc+"[34m@"+d.user.screen_name+" / "+d.user.name + esc+"[m" +
-        " ; " + esc+"[33mvia " + source_trim(d.source) + esc+"[m" +
-        " ; " + d.created_at + "\n" + d.text);
-    }
-  });
-}
-
-function upload(filename) {
-  filename = filename.replace('~', process.env.HOME);
-  child.exec('base64 -w 0 '+filename+' >/tmp/imagebased', function () {
-    fs.readFile('/tmp/imagebased', 'utf8', function(er, b) {
-      console.log("upload",filename,b.slice(0, 50))
-      var url =
-        "https://api.twitter.com/1.1/statuses/update_with_media.json";
-      tw[current_user].post(url, { status:"", filename:"media.png", "media[]":b }
-                          , function(er,data){console.log(er,data)});
-    });
+    addFollowList(data, u);
+    data.reverse().forEach(show);
   });
 }
 
@@ -702,11 +656,6 @@ function putStr(text) {
         console.log(text);
     else
         screen_buf += text + "\n";
-}
-
-function iota(n) {
-  for (var i=0, r=[]; i<n; ++i) r[i] = i;
-  return r;
 }
 
 // --------------  main

@@ -102,5 +102,5 @@ To get Twitter ID list, I wrote script/getFollows.js (1.1/get/friend/list).
 But this API's limit is too narrow.
 At one time, this get 200 ID.
 
-    node ./script/getFollows.js > ~/.salmon_completions
+    node ./tools/getFollows.js > ~/.salmon_completions
 
