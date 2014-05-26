@@ -11,6 +11,7 @@ var Font = {
   , cyan: make(36)
   , gray: make(37)
   , brown: make(33)
+  , blue: make(34)
   , underline: make(4)
 };
 

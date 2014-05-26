@@ -75,6 +75,10 @@ function source_trim(str) {
   return str;
 }
 
+function hash(data) {
+  return data.id_str;
+}
+
 function show(data) {
     var name = data.user.screen_name
       , nick = data.user.name
@@ -137,10 +141,8 @@ function setup(u) {
                 faved_text = data.target_object.text;
                 faver_name = data.source.screen_name;
 
-                colored = esc + "[34m@" + faver_name + esc + "[m " + 
-                          esc + "[31m" + event + "s" + esc + "[m " +
-                          esc + "[34m@" + faved_name + esc + "[m" + 
-                          " : " + faved_text;
+                colored = Font.blue('@' + faver_name) + ' ' + Font.red(event+'s') + ' ' + Font.blue('@' + faved_name) +
+                          ' : ' + faved_text;
                 putStr(colored);
                 favs.push(colored);
                 beep();
@@ -152,10 +154,7 @@ function setup(u) {
                 ed_name = data.target.screen_name;
                 er_name = data.source.screen_name;
 
-                esc = String.fromCharCode(27)
-                colored = esc + "[34m@" + er_name + esc + "[m " + 
-                          esc + "[31m" + event + "s" + esc + "[m " +
-                          esc + "[34m@" + ed_name + esc + "[m";
+                colored = Font.blue('@' + er_name) + ' ' + Font.red(event+'s') + ' ' + Font.blue('@' + ed_name);
                 putStr(colored);
                 favs.push(colored);
                 beep();
@@ -171,7 +170,7 @@ function setup(u) {
                 return;
             }
 
-            if (display == 'talse' && text[0] != '@') {
+            if (display == 'talse' && data.text[0] != '@') {
               return; // mute
             }
 
@@ -179,7 +178,7 @@ function setup(u) {
             addFollowList(data, u);
 
             // nub time line
-            var t = name + text;
+            var t = hash(data);
             if (recently_tw.indexOf(t) != -1) return;
             recently_tw.push(t);
             if (recently_tw.length > recently_tw_size) {
@@ -192,23 +191,18 @@ function setup(u) {
             var urls = data.entities.urls;
             for (var i in urls) putStr('> ' + urls[i].expanded_url);
 
+            if (isMe(data.user.screen_name) && data.text[0] === '/') {
+                setTimeout(deleteTweet, delete_lag, data.id_str);
+            }
+
+            if (isMe(data.user.screen_name)) { last_status_id.push(data.id_str); }
             function isMe(name) { return (name in users); }
 
-            if (isMe(name) && text[0] === '/') {
-                setTimeout(deleteTweet, delete_lag, status_id);
-            }
-
-            if (isMe(name)) {
-                last_status_id.push(status_id);
-            }
-
             function isReply(text) {
-              for (var u in users) {
-                if (text.indexOf(u) !== -1) return true;
-              }
+              for (var u in users) if (text.indexOf(u) !== -1) return true;
               return (/枚方|まいかた|ひららら|いらいざ|イライザ/.test(text));
             }
-            if (isReply(text)) {
+            if (isReply(data.text)) {
                 replies.push(colored);
                 beep();
             }
@@ -300,62 +294,63 @@ stdin.on("data", function(chunk) {
     }
 
     function proc_insert(chunk) {
+      chunk = chunk.trim();
 
-        if (chunk[0] == '.') {
-            if (chunk.length > 1) {
-                var succ = false;
-                for (u in users) {
-                    if (u[0] == chunk[1]) {
-                        PostBy(tw_buf, u);
-                        succ = true;
-                        break;
-                    }
-                }
-                if (!succ)
-                    PosttoTwitter(tw_buf);
-            } else {
-                PosttoTwitter(tw_buf);
+      if (chunk[0] == '.') {
+        if (chunk.length > 1) {
+          var succ = false;
+          for (u in users) {
+            if (u[0] == chunk[1]) {
+              PostBy(tw_buf, u);
+              succ = true;
+              break;
             }
-            moveToStream();
-        } else if (chunk == "quit" || chunk == ",") {
-            moveToStream();
+          }
+          if (!succ)
+            PosttoTwitter(tw_buf);
         } else {
-            if (tw_buf == "")
-                tw_buf = chunk;
-            else
-                tw_buf += '\n'+chunk;
-            prompt();
+          PosttoTwitter(tw_buf);
         }
+        moveToStream();
+      } else if (chunk == "quit" || chunk == ",") {
+        moveToStream();
+      } else {
+        if (tw_buf == "")
+          tw_buf = chunk;
+        else
+          tw_buf += '\n'+chunk;
+        prompt();
+      }
     }
 
     function proc_lineInsert(chunk) {
-        chunk = chunk.trim();
-        if (chunk == "." || chunk==',') {
-            moveToStream();
-            return;
-        }
-        else {
-            PosttoTwitter(chunk);
-        }
-        if (screen_buf != "") {
-            console.log(screen_buf);
+      chunk = chunk.trim();
+      if (chunk == "." || chunk==',') {
+        moveToStream();
+        return;
+      }
+      else {
+        PosttoTwitter(chunk);
+      }
+      if (screen_buf != "") {
+        console.log(screen_buf);
             screen_buf = "";
         }
         prompt_I();
     }
 
     function proc_repl(chunk) {
-        if (chunk[0] == ":")
-            proc_command(chunk.slice(1));
-        else {
-            try {
-                console.log(it = eval(chunk));
-            } catch (e) {
-                lasterr = e;
-                console.log(e);
-            }
-            prompt();
+      if (chunk[0] == ":")
+        proc_command(chunk.slice(1));
+      else {
+        try {
+          console.log(it = eval(chunk));
+        } catch (e) {
+          lasterr = e;
+          console.log(e);
         }
+        prompt();
+      }
     }
 
     function proc_search(chunk) {
@@ -519,6 +514,19 @@ stdin.on("data", function(chunk) {
           var url = "https://api.twitter.com/1.1/users/report_spam.json";
           var scname = chunk.split(" ")[1];
           tw[current_user].post(url, {"screen_name" : scname }, function(){});
+        }
+
+        else if (chunk.slice(0, 5) === 'icon ') {
+          var sname = chunk.split(' ')[1];
+          var url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
+          tw[current_user].get(
+              url,
+              {screen_name : sname, count : 1},
+              function(er, data) {
+                var url = data[0].user.profile_image_url;
+                url = url.replace(/_normal/, '');
+                child.exec('feh ' + url, function(){});
+              });
         }
 
         else if (chunk.slice(0, 7) == 'browse ') {
