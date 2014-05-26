@@ -19,20 +19,26 @@ for (var u in users) {
 
 function getFollows(tw) {
   function loop(cur) {
-    tw.get("https://api.twitter.com/1.1/friends/list.json"
-          , {"count": "200"}
-          , function(err, data) {
-              if (err) {
-                console.log(err);
-                return;
-              }
-              var next = data.next_cursor_str;
-              console.log(data.users.map(function(o){return o.screen_name}).join('\n'));
-              console.warn(next);
-              if (next != "0") {
-                return loop(next);
-              }
-          });
+    var options = { count : "200" };
+    options['cursor'] = cur;
+    tw.get(
+        "https://api.twitter.com/1.1/friends/list.json",
+        options,
+        function(err, data) {
+          if (err) {
+            console.log(err);
+            process.exit(1);
+          }
+          var next = data.next_cursor_str;
+
+          console.log(data.users.map(function(o){return o.screen_name}).join('\n'));
+          console.warn(next);
+
+          if (next === '0') { // END
+            return;
+          }
+          return loop(next);
+        });
   }
   loop(-1);
 }
