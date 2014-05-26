@@ -24,18 +24,18 @@ setting.json
 {
   "users": {
     "account1" : {
-        "consumer_key":    "6eURWj9HZNHLOHVjHlemA"
-      , "consumer_secret": "ePJ0KSEHskh1kzYzuAB6f8LCGegOknyfn8TghCIRY"
-      , "access_token_key":    "342000322-ibbFBSKBDX8SHW8GrHngqOOcNV5pVlmQxK5jdZeo"
-      , "access_token_secret": "nOJrEnbe4Z7cI3jA8COHy9LERgYjfjpzepJ9sPw70bvdi"
+        "consumer_key":    "---------------------"
+      , "consumer_secret": "-----------------------------------------"
+      , "access_token_key":    "--------------------------------------------------"
+      , "access_token_secret": "---------------------------------------------"
       , "display": "true"
     }
     ,
     "account2": {
-        "consumer_key":    "qnNRwjeo8zFjhIDfgG1F6Q"
-      , "consumer_secret": "JtKRv1e9QIEG6mKvWl0g4ygGVGzWclgfd7GaSBEGtg"
-      , "access_token_key":    "2209919010-HdNJADFiBIhwyTeg5sgZbZZoBxO2yDb02hICjVc"
-      , "access_token_secret": "laAhSf2igiOVNflmjjV8oNxdUl0Lbc6kDSJrx1Yr6M0d2"
+        "consumer_key":    "----------------------"
+      , "consumer_secret": "------------------------------------------"
+      , "access_token_key":    "--------------------------------------------------"
+      , "access_token_secret": "---------------------------------------------"
       , "display": "true"
       , "default": "true"
     }
