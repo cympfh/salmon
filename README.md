@@ -1,5 +1,7 @@
 Vim interface, Twitter client
 
+![screen shot](./screenshot.png)
+
 Get Starting
 ============
 
