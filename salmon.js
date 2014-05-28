@@ -31,6 +31,7 @@ var recently_tw_size = 6
 
   , last_status_id = []
   , last_search_word = ''
+  , lastID = []
 
   , tw = {}
   , current_user
@@ -176,6 +177,9 @@ function setup(u) {
 
             // add follow list
             addFollowList(data, u);
+
+            // add status_id
+            lastID[data.user.screen_name] = data.id_str;
 
             // nub time line
             var t = hash(data);
