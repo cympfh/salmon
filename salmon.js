@@ -6,9 +6,9 @@ var child   = require('child_process')
   , setting = require('../setting.json')
   , URL = require('./lib/urls')
   , users   = setting.users
-  , print   = console.log
   , beep = require('./sound/beep')
   , NG = require('./user/ng')
+  , font = require('./lib/font')
   ;
  
 var recently_tw_size = 6
@@ -62,7 +62,6 @@ function make_twitter(name) {
 
 // --------------  util
 
-Font = require('./font');
 
 function timezone(date) {
   date = new Date('' + date);
@@ -98,9 +97,9 @@ function show(data) {
     if (NG.ids.test(name)) return;
 
     colored =
-      [Font.red('@' + name), Font.cyan(nick), Font.gray(status_id),
-       Font.red(followList), Font.brown('via ' + source)].join(' ')
-      + Font.gray(' ++ ' + timezone(time)) + '\n'
+      [font.red('@' + name), font.cyan(nick), font.gray(status_id),
+       font.red(followList), font.brown('via ' + source)].join(' ')
+      + font.gray(' ++ ' + timezone(time)) + '\n'
       + text ;
 
     putStr(colored);
@@ -140,7 +139,7 @@ function setup(u) {
                 faved_text = data.target_object.text;
                 faver_name = data.source.screen_name;
 
-                colored = Font.blue('@' + faver_name) + ' ' + Font.red(event+'s') + ' ' + Font.blue('@' + faved_name) +
+                colored = font.blue('@' + faver_name) + ' ' + font.red(event+'s') + ' ' + font.blue('@' + faved_name) +
                           ' : ' + faved_text;
                 putStr(colored);
                 favs.push(colored);
@@ -153,7 +152,7 @@ function setup(u) {
                 ed_name = data.target.screen_name;
                 er_name = data.source.screen_name;
 
-                colored = Font.blue('@' + er_name) + ' ' + Font.red(event+'s') + ' ' + Font.blue('@' + ed_name);
+                colored = font.blue('@' + er_name) + ' ' + font.red(event+'s') + ' ' + font.blue('@' + ed_name);
                 putStr(colored);
                 favs.push(colored);
                 beep();
@@ -220,16 +219,16 @@ function setup(u) {
         });
 
         stream.on('end', function (response) {
-            print("### stream end (after 10sec, retry to connect)")
+            console.warn("### stream end (after 10sec, retry to connect)")
             setTimeout(setup, 10000, u);
         });
 
         stream.on('destroy', function (response) {
-            print("### stream destroied")
+            console.warn("### stream destroied")
         });
 
         stream.on("error", function (e) {
-            print("err!", e);
+            console.warn("err!", e);
         });
     });
 }
