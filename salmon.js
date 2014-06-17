@@ -4,19 +4,12 @@ var child   = require('child_process')
   , fs      = require('fs')
   , twitter = require('ntwitter')
   , setting = require('../setting.json')
-  , URL = require('./urls')
+  , URL = require('./lib/urls')
   , users   = setting.users
   , print   = console.log
-
-  , args = process.argv
-  , OS = ('TERM_PROGRAM' in process.env) ? 'MAC' : 'LINUX'
+  , beep = require('./sound/beep')
+  , NG = require('./user/ng')
   ;
-
-var NG = require('./ng')
-  , ng_ids = NG.ids
-  ;
-
-var beep = require('./beep')(OS);
  
 var recently_tw_size = 6
   , delete_lag = 10 * 60000
@@ -102,7 +95,7 @@ function show(data) {
       ;
 
     if (source === 'Ask.fm') return;
-    if (ng_ids.test(name)) return;
+    if (NG.ids.test(name)) return;
 
     colored =
       [Font.red('@' + name), Font.cyan(nick), Font.gray(status_id),
@@ -675,7 +668,7 @@ function getReply() {
 
 // stdout
 function putStr(text) {
-  if (mode == "stream") {
+  if (mode === 'stream') {
     console.log(text);
   } else {
     screen_buf += text + "\n";
