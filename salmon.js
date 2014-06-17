@@ -62,20 +62,11 @@ function make_twitter(name) {
 
 // --------------  util
 
-
-function timezone(date) {
-  date = new Date('' + date);
-  return date.toString();
-}
-
-function source_trim(str) {
-  if (str.indexOf("<a") == 0) str = str.slice(str.indexOf(">")+1, str.length-4);
-  return str;
-}
-
-function hash(data) {
-  return data.id_str;
-}
+var UTIL = require('./lib/util')
+  , timezone = UTIL.timezone
+  , source_trim = UTIL.source_trim
+  , hash = UTIL.hash
+;
 
 function show(data) {
     var name = data.user.screen_name
