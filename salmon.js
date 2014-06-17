@@ -11,6 +11,10 @@ var child   = require("child_process")
   , OS = ('TERM_PROGRAM' in process.env) ? 'MAC' : 'LINUX'
   ;
 
+var NG = require('./ng')
+  , ng_ids = NG.ids
+  ;
+
 var beep = require("./beep")(OS);
  
 var recently_tw_size = 6
@@ -97,13 +101,13 @@ function show(data) {
       ;
 
     if (source === 'Ask.fm') return;
+    if (ng_ids.test(name)) return;
 
     colored =
       [Font.red('@' + name), Font.cyan(nick), Font.gray(status_id),
-       Font.red(followList), Font.brown('via ' + source)].join(' ') + ' ++ ' +
-      Font.underline(timezone(time)) + '\n' +
-      text
-      ;
+       Font.red(followList), Font.brown('via ' + source)].join(' ')
+      + Font.gray(' ++ ' + timezone(time)) + '\n'
+      + text ;
 
     putStr(colored);
     return colored;
