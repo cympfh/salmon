@@ -1,9 +1,10 @@
 #!/usr/bin/rlwrap node
 
-var child   = require("child_process")
-  , fs      = require("fs")
-  , twitter = require("ntwitter")
-  , setting = require("../setting.json")
+var child   = require('child_process')
+  , fs      = require('fs')
+  , twitter = require('ntwitter')
+  , setting = require('../setting.json')
+  , URL = require('./urls')
   , users   = setting.users
   , print   = console.log
 
@@ -15,7 +16,7 @@ var NG = require('./ng')
   , ng_ids = NG.ids
   ;
 
-var beep = require("./beep")(OS);
+var beep = require('./beep')(OS);
  
 var recently_tw_size = 6
   , delete_lag = 10 * 60000
@@ -27,11 +28,11 @@ var recently_tw_size = 6
   , recentlyMyTw = []
   , followedBy = []
 
-  , tw_buf = ""
-  , screen_buf = ""
-  , footer = ""
+  , tw_buf = ''
+  , screen_buf = ''
+  , footer = ''
 
-  , mode = "stream" // repl | stream | insert | lineInsert | command
+  , mode = 'stream' // repl | stream | insert | lineInsert | command
 
   , last_status_id = []
   , last_search_word = ''
@@ -51,7 +52,7 @@ function init() {
     tw[u] = make_twitter(u);
     setup(u);
   }
-  console.log("current_user =", current_user);
+  console.log('current_user is', current_user);
 }
 
 function make_twitter(name) {
@@ -379,24 +380,22 @@ stdin.on("data", function(chunk) {
         word = ws.join(" ");
         last_search_word = word;
       }
-      tw[current_user].get("https://api.twitter.com/1.1/search/tweets.json"
-                          , { q: word, count: n, lang: "ja"
-                            , result_type: "recent" }
-                          , function (err, data) {
+      tw[current_user].get(
+        URL.tweets,
+        { q: word, count: n, lang: "ja", result_type: "recent" },
+        function (err, data) {
 
           if (!data || !("statuses" in data)) {
             console.log("fail to search:", last_search_word);
-          }
-          else {
-            console.log();
-            console.log("-- result of search ---------------------------");
+          } else {
+            console.log("\n-- result of search");
             data = data.statuses;
             data.reverse().forEach(show);
             console.log();
           }
           moveToStream();
 
-                            });
+        });
     }
 
     function proc_command(chunk) {
@@ -505,30 +504,37 @@ stdin.on("data", function(chunk) {
         else if (chunk.slice(0,4) == 'fav ') {
           var id = chunk.split(' ')[1];
           console.log(current_user, "favs", id);
-          var url = "https://api.twitter.com/1.1/favorites/create.json";
-          tw[current_user].post(url, { "id" : id }, function(er, data) {});
+          tw[current_user].post(
+            URL.favorites_create,
+            { "id" : id },
+            function(er, data){});
         }
         else if (chunk.slice(0, 7) === 'follow ') {
-          var url = "https://api.twitter.com/1.1/friendships/create.json";
-          var scname = chunk.split(" ")[1];
-          tw[current_user].post(url, {"screen_name" : scname }, function(){});
+          var scname = chunk.split(' ')[1];
+          tw[current_user].post(
+            URL.friendships_create,
+            {"screen_name" : scname },
+            function(){});
         }
         else if (chunk.slice(0, 9) === 'unfollow ') {
-          var url = "https://api.twitter.com/1.1/friendships/destroy.json";
           var scname = chunk.split(" ")[1];
-          tw[current_user].post(url, {"screen_name" : scname }, function(){});
+          tw[current_user].post(
+            URL.friendships_destroy,
+            {"screen_name" : scname },
+            function(){});
         }
         else if (chunk.slice(0, 5) === 'spam ') {
-          var url = "https://api.twitter.com/1.1/users/report_spam.json";
           var scname = chunk.split(" ")[1];
-          tw[current_user].post(url, {"screen_name" : scname }, function(){});
+          tw[current_user].post(
+            URL.report_spam,
+            {"screen_name" : scname },
+            function(){});
         }
 
         else if (chunk.slice(0, 5) === 'icon ') {
           var sname = chunk.split(' ')[1];
-          var url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
           tw[current_user].get(
-              url,
+              URL.user_timeline,
               {screen_name : sname, count : 1},
               function(er, data) {
                 var url = data[0].user.profile_image_url;
@@ -539,13 +545,12 @@ stdin.on("data", function(chunk) {
 
         else if (chunk.slice(0, 7) == 'browse ') {
           var sname = chunk.split(' ')[1];
-          var url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
           tw[current_user].get(
-              url,
+              URL.user_timeline,
               {screen_name : sname, count : 20},
               function(er, data) {
                 if (er || !data) {
-                  console.dir("err:",er);
+                  console.warn("err:",er);
                   return;
                 }
                 putStr('/* user timeline of ' + sname + ' */');
@@ -555,10 +560,8 @@ stdin.on("data", function(chunk) {
         }
 
         else if (chunk == 'browse') {
-
-          var url = "https://api.twitter.com/1.1/statuses/home_timeline.json";
           tw[current_user].get(
-              url,
+              URL.home_timeline,
               { "id" : id },
               function(er, data) {
                 putStr('/* home timeline of ' + current_user + ' */');
@@ -649,29 +652,34 @@ function deleteTweet(status_id) {
   } else {
     status_id = last_status_id.pop();
   }
-  console.log("delete", status_id);
-  for (var u in users)
-    tw[u].post("https://api.twitter.com/1.1/statuses/destroy/"+status_id+".json",
-               {id : status_id}, function(){});
+  console.log('delete', status_id);
+  for (var u in users) {
+    tw[u].post(
+      "https://api.twitter.com/1.1/statuses/destroy/"+status_id+".json",
+      {id : status_id}, function(){});
+  }
 }
 
-function getReply () {
-  for (u in users)
-  tw[u].get("https://api.twitter.com/1.1/statuses/mentions_timeline.json",
-    {count : 6},
-  function(err, data){
-    if (err) return print(err);
-    addFollowList(data, u);
-    data.reverse().forEach(show);
-  });
+function getReply() {
+  for (var u in users) {
+    tw[u].get(
+      URL.mentions_timeline,
+      {count : 6},
+      function(err, data){
+        if (err) return console.warn(err);
+        addFollowList(data, u);
+        data.reverse().forEach(show);
+      });
+  }
 }
 
 // stdout
 function putStr(text) {
-    if (mode == "stream")
-        console.log(text);
-    else
-        screen_buf += text + "\n";
+  if (mode == "stream") {
+    console.log(text);
+  } else {
+    screen_buf += text + "\n";
+  }
 }
 
 // --------------  main
