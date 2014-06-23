@@ -85,7 +85,7 @@ function show(data) {
       ;
 
     if (source === 'Ask.fm') return;
-    if (NG.ids.test(name)) return;
+    if (NG.re_id.test(name)) return;
 
     colored =
       [font.red('@' + name), font.cyan(nick), font.gray(status_id),
