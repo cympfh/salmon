@@ -1,8 +1,8 @@
 namespace = module.exports = {};
 
 namespace.ids = [
-  'this_is_test_user',
   'asterisk37n',
+  'lll_anna_lll',
   'hirokyun'
 ];
 
