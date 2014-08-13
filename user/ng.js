@@ -1,9 +1,7 @@
 namespace = module.exports = {};
 
 namespace.ids = [
-  'this_is_test_user',
-  'asterisk37n',
-  'hirokyun'
+  'my-sweet-my-home'
 ];
 
 function compile_id() {
