@@ -87,11 +87,22 @@ function show(data) {
     if (source === 'Ask.fm') return;
     if (NG.re_id.test(name)) return;
 
+
+function color_at(str) {
+  return str.replace(/(@[a-zA-Z0-9_]*)/g, color);
+
+  // where
+  function color(str) {
+    return font.light_green(str)
+  }
+
+}
+
     colored =
       [font.red('@' + name), font.cyan(nick), font.gray(status_id),
        font.red(followList), font.brown('via ' + source)].join(' ')
       + font.gray(' ++ ' + timezone(time)) + '\n'
-      + text ;
+      + color_at(text) ;
 
     putStr(colored);
     return colored;
