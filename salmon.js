@@ -194,7 +194,7 @@ function setup(u) {
             var urls = data.entities.urls;
             for (var i in urls) putStr('> ' + urls[i].expanded_url);
 
-            if (isMe(data.user.screen_name) && data.text[0] === '/') {
+            if (isMe(data.user.screen_name) && data.text[data.text.length-1] === '_') {
                 setTimeout(deleteTweet, delete_lag, data.id_str);
             }
 
