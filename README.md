@@ -1,4 +1,4 @@
-Vim interface, Twitter client
+a Twitter client with Vim like interface
 
 ![screen shot](./screenshot.png)
 
