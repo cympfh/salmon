@@ -12,7 +12,7 @@ var child   = require('child_process')
   ;
  
 var recently_tw_size = 6
-  , delete_lag = 10 * 60000
+  , delete_lag = 30 * 60000
 
 // stack
   , replies = []
@@ -194,7 +194,9 @@ function setup(u) {
             var urls = data.entities.urls;
             for (var i in urls) putStr('> ' + urls[i].expanded_url);
 
-            if (isMe(data.user.screen_name) && data.text[data.text.length-1] === '_') {
+            last = data.text[data.text.length - 1];
+            if (isMe(data.user.screen_name)
+                && (last === '_' || last === '＿')) {
                 setTimeout(deleteTweet, delete_lag, data.id_str);
             }
 
@@ -289,7 +291,7 @@ stdin.on("data", function(chunk) {
             case '/':
                 mode = "search"
                 stdin.setRawMode(false);
-                stdout.write("/");
+                stdout.write('/');
                 break;
             default:
                 break;
