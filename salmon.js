@@ -86,8 +86,8 @@ function show(data) {
 
     if (source === 'Ask.fm') return;
     if (NG.screen_name(name)) return;
-    if (NG.text(name)) return;
-    if (NG.source(name)) return;
+    if (NG.text(text)) return;
+    if (NG.source(source)) return;
 
     function color_at(str) {
       return str.replace(/(@[a-zA-Z0-9_]*)/g, color);

@@ -1,6 +1,5 @@
 var screen_names = [
-  'string',
-  /^re$/
+  'OrehaGandamu', /hidamarer.ip/
 ];
 
 var texts = [
@@ -8,8 +7,7 @@ var texts = [
 ];
 
 var sources = [
-  'Ask.fm',
-  /Tween/
+  'Ask.fm', /Tween/
 ];
 
 var invalid = function () { return false; };
