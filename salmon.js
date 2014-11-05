@@ -1,47 +1,45 @@
 #!/usr/bin/rlwrap node
 
-var child   = require('child_process')
-  , fs      = require('fs')
-  , twitter = require('ntwitter')
-  , setting = require('../setting.json')
-  , URL = require('./lib/urls')
-  , users   = setting.users
-  , beep = require('./sound/beep')
-  , NG = require('./user/ng')
-  , font = require('./lib/font')
-  ;
+var child   = require('child_process');
+var fs      = require('fs');
+var twitter = require('ntwitter');
+var setting = require('../setting.json');
+var URL = require('./lib/urls');
+var users   = setting.users;
+var beep = require('./sound/beep');
+var NG = require('./user/ng');
+var font = require('./lib/font');
  
-var recently_tw_size = 6
-  , delete_lag = 30 * 60000
+var recently_tw_size = 6;
+var delete_lag = 30 * 60000;
 
 // stack
-  , replies = []
-  , favs = []
-  , recently_tw = []
-  , recentlyMyTw = []
-  , followedBy = []
+var replies = [];
+var favs = [];
+var recently_tw = [];
+var recentlyMyTw = [];
+var followedBy = [];
 
-  , tw_buf = ''
-  , screen_buf = ''
-  , footer = ''
+var tw_buf = '';
+var screen_buf = '';
+var footer = '';
 
-  , mode = 'stream' // repl | stream | insert | lineInsert | command
+var mode = 'stream'; // repl | stream | insert | lineInsert | command
 
-  , last_status_id = []
-  , last_search_word = ''
-  , lastID = []
+var last_status_id = [];
+var last_search_word = '';
+var lastID = [];
 
-  , tw = {}
-  , current_user
+var tw = {};
+var current_user;
 
-  , it
-  , lasterr
-  ;
+var it, lasterr;
 
 // ----------------- twitter
 
 function init() {
-  for (var u in users) {
+  var u;
+  for (u in users) {
     tw[u] = make_twitter(u);
     setup(u);
   }
@@ -50,8 +48,11 @@ function init() {
 
 function make_twitter(name) {
   var u = users[name];
-  if (u.default) current_user = name;
-  else if (!current_user) current_user = name;
+  if (u.default) {
+    current_user = name;
+  } else if (!current_user) {
+    current_user = name;
+  }
   return new twitter({
     consumer_key        : u.consumer_key,
     consumer_secret     : u.consumer_secret,
@@ -62,11 +63,10 @@ function make_twitter(name) {
 
 // --------------  util
 
-var UTIL = require('./lib/util')
-  , timezone = UTIL.timezone
-  , source_trim = UTIL.source_trim
-  , hash = UTIL.hash
-;
+var UTIL = require('./lib/util');
+var timezone = UTIL.timezone;
+var source_trim = UTIL.source_trim;
+var hash = UTIL.hash;
 
 function show(data) {
     var name = data.user.screen_name
@@ -85,18 +85,19 @@ function show(data) {
       ;
 
     if (source === 'Ask.fm') return;
-    if (NG.re_id.test(name)) return;
+    if (NG.screen_name(name)) return;
+    if (NG.text(name)) return;
+    if (NG.source(name)) return;
 
+    function color_at(str) {
+      return str.replace(/(@[a-zA-Z0-9_]*)/g, color);
 
-function color_at(str) {
-  return str.replace(/(@[a-zA-Z0-9_]*)/g, color);
+      // where
+      function color(str) {
+        return font.light_green(str)
+      }
 
-  // where
-  function color(str) {
-    return font.light_green(str)
-  }
-
-}
+    }
 
     colored =
       [font.red('@' + name), font.cyan(nick), font.gray(status_id),
