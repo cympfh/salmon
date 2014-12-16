@@ -11,7 +11,7 @@ var NG = require('./user/ng');
 var font = require('./lib/font');
  
 var recently_tw_size = 6;
-var delete_lag = 30 * 60000;
+var delete_lag = 30 * 60000; // 30 min
 
 // stack
 var replies = [];
@@ -38,8 +38,7 @@ var it, lasterr;
 // ----------------- twitter
 
 function init() {
-  var u;
-  for (u in users) {
+  for (var u in users) {
     tw[u] = make_twitter(u);
     setup(u);
   }
@@ -124,11 +123,8 @@ function addFollowList (data, u) {
 function setup(u) {
     console.log("### stream start -- " + u);
 
-    var display =
-       (!('display' in users[u])) ? "true"
-                       : users[u].display;
-
-    if (display === 'false') return;
+    var display = (users[u].display === undefined) || (users[u].display);
+    if (display === false) return;
 
     tw[u].stream('user',  function(stream) {
         stream.on('data', function(data) {
@@ -199,6 +195,7 @@ function setup(u) {
             if (isMe(data.user.screen_name)
                 && (last === '_' || last === '＿')) {
                 setTimeout(deleteTweet, delete_lag, data.id_str);
+                console.warn("this tweet will be deleted after ", delete_lag);
             }
 
             if (isMe(data.user.screen_name)) { last_status_id.push(data.id_str); }

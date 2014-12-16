@@ -1,13 +1,13 @@
 var screen_names = [
-  'OrehaGandamu', /hidamarer.ip/
+  'hogehogehoge'
 ];
 
 var texts = [
-  'ガンダム'
+  '死ね'
 ];
 
 var sources = [
-  'Ask.fm', /Tween/
+  'Ask.fm'
 ];
 
 var invalid = function () { return false; };
