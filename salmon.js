@@ -21,7 +21,7 @@ var NG    = require('./user/ng');
 var me    = require('./user/me');
 
 var recently_tw_size = 6;
-var delete_lag = 30 * 60000; // 30 min
+var delete_lag = 3 * 60 * 60000; // 3 hr
 
 // stack
 var replies = [];
