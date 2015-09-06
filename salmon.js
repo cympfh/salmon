@@ -9,6 +9,20 @@ var users = setting.users;
 var beep  = require('./sound/beep');
 var font  = require('./lib/font');
 
+var delete_after_fav = false;
+
+// ---------- parse args
+
+(function() {
+  var i, a;
+  for (i=2; i<process.argv.length; ++i) {
+    a = process.argv[i];
+    if (a === "-F") {
+      delete_after_fav = true;
+    }
+  }
+}());
+
 // --------------  util
 
 var util = require('./lib/util');
@@ -255,7 +269,10 @@ function setup(u) {
         colored += font.blue('@' + ed_name) + ' : ' + ing_text;
         put_str(colored);
         favs.push(colored);
-        beep();
+
+        if (me.is_me(ed_name)) {
+          delete_tweet(data.target_object.id_str);
+        }
 
         return;
       }
