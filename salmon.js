@@ -1,5 +1,3 @@
-#!/usr/bin/rlwrap node
-
 var child   = require('child_process');
 var fs      = require('fs');
 var Twitter = require('ntwitter');
@@ -69,8 +67,6 @@ function put_str(text) {
   }
 }
 
-
-
 // ----------------- twitter
 
 function post_to_twitter(msg) {
@@ -138,10 +134,6 @@ function post_to_twitter(msg) {
   } else {
     post(current_user, messaging);
   }
-
-  return;
-
-  // where
 }
 
 function post_by(text, name) {
@@ -271,7 +263,9 @@ function setup(u) {
         favs.push(colored);
 
         if (me.is_me(ed_name)) {
-          delete_tweet(data.target_object.id_str);
+          if (me.is_me(er_name) || (ed_name === 'ampeloss' && ing_text.indexOf('ゆゆ式') == -1)) {
+            delete_tweet(data.target_object.id_str);
+          }
         }
 
         return;

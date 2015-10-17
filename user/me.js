@@ -1,5 +1,5 @@
 var mines = [
-  'cympfh', 'unddich', 'ampeloss', 'cympfh_out', 'qshold'
+  'cympfh', 'ampeloss', 'cympfh_out', 'qaugh'
 ];
 
 function is_me(username) {

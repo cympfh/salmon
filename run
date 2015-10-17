@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo -ne "\eks\e\\"
+rlwrap -f ./salmon.rlwrap node ./salmon.js

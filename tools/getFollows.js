@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * 使用制限アリのAPI
  * https://dev.twitter.com/docs/api/1.1/get/friends/list
