@@ -263,7 +263,7 @@ function setup(u) {
         favs.push(colored);
 
         if (me.is_me(ed_name)) {
-          if (me.is_me(er_name) || (ed_name === 'ampeloss' && ing_text.indexOf('ゆゆ式') == -1)) {
+          if (me.is_me(er_name) || (ed_name === 'ampeloss')) {
             delete_tweet(data.target_object.id_str);
           }
         }
